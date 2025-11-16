@@ -1,6 +1,11 @@
 package com.filmes.model;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
-    String username;
-    String password;
+    private String username;
+    private String password;
 }
