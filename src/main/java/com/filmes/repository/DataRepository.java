@@ -50,6 +50,7 @@ public class DataRepository {
     public User saveUser(User user) {
         File tableFile = createTable("User");
 
+        System.out.println(user.toString());
         if (tableFile == null) {
             System.err.println("Failed to create or access User table.");
             return null;
