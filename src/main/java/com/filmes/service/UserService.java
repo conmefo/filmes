@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.filmes.dto.request.UserCreationRequest;
 import com.filmes.dto.request.UserUpdateRequest;
 import com.filmes.dto.response.UserResponse;
+import com.filmes.enums.Role;
 import com.filmes.exception.AppException;
 import com.filmes.exception.ErrorCode;
 import com.filmes.mapper.UserMapper;
@@ -40,10 +41,10 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        // HashSet<String> roles = new HashSet<>();
-        // roles.add(Role.USER.name());
+        HashSet<String> roles = new HashSet<>();
+        roles.add(Role.USER.name());
 
-        // user.setRoles(roles);
+        user.setRoles(roles);
 
         return userMapper.toUserResponse(dataRepository.saveUser(user));
     }
