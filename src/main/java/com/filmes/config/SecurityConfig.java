@@ -27,7 +27,7 @@ public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String secretKey;
 
-    private final String[] PUBLIC_ENDPOINT = { "/users", "/auth/token", "/auth/introspect" };
+    private final String[] PUBLIC_ENDPOINT = { "/users", "/auth/token", "/auth/introspect", "/api/register"};
 
     @Bean
     public PasswordEncoder passwordEncoder() {
