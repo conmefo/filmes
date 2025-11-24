@@ -17,14 +17,14 @@ import com.filmes.exception.AppException;
 import com.filmes.exception.ErrorCode;
 import com.filmes.mapper.UserMapper;
 import com.filmes.model.User;
-import com.filmes.repository.DataRepository;
+import com.filmes.repository.UserRepository;
 
 import jakarta.validation.Valid;
 
 @Service
 public class UserService {
     @Autowired
-    DataRepository dataRepository;
+    UserRepository userRepository;
     
     @Autowired
     UserMapper userMapper;
@@ -33,7 +33,7 @@ public class UserService {
     PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserCreationRequest request) {
-        if (dataRepository.findUserByUsername(request.getUsername()) != null) {
+        if (userRepository.findUserByUsername(request.getUsername()) != null) {
             throw new AppException(ErrorCode.USER_EXISTS);
         }
 
@@ -46,11 +46,11 @@ public class UserService {
 
         user.setRoles(roles);
 
-        return userMapper.toUserResponse(dataRepository.saveUser(user));
+        return userMapper.toUserResponse(userRepository.saveUser(user));
     }
 
     public List<UserResponse> getAllUsers() {
-        List<User> users = dataRepository.getAllUsers();
+        List<User> users = userRepository.getAllUsers();
 
         return users.stream()
                 .map(userMapper::toUserResponse)
@@ -58,20 +58,20 @@ public class UserService {
     }
 
     public UserResponse updateUser(String username, UserUpdateRequest request){
-        if (dataRepository.findUserByUsername(username) == null) {
+        if (userRepository.findUserByUsername(username) == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
 
         String password = passwordEncoder.encode(request.getPassword());
-        return userMapper.toUserResponse(dataRepository.updateUser(username, password));
+        return userMapper.toUserResponse(userRepository.updateUser(username, password));
     }
 
     public void deleteUser(String username){
-        if (dataRepository.findUserByUsername(username) == null) {
+        if (userRepository.findUserByUsername(username) == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
 
-        dataRepository.deleteUser(username);
+        userRepository.deleteUser(username);
     }
 
 }

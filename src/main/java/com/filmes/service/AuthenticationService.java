@@ -11,7 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.filmes.repository.DataRepository;
+import com.filmes.repository.UserRepository;
 import com.filmes.dto.request.AuthenticationRequest;
 import com.filmes.dto.request.IntrospectRequest;
 import com.filmes.dto.response.AuthenticationResponse;
@@ -36,13 +36,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthenticationService {
     @Autowired
-    DataRepository dataRepository;
+    UserRepository userRepository;
 
     @Value("${jwt.signerKey}")
     private String secretKey;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        var user = dataRepository.findUserByUsername(request.getUsername());
+        var user = userRepository.findUserByUsername(request.getUsername());
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
