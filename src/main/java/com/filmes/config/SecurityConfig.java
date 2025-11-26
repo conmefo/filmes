@@ -39,7 +39,8 @@ public class SecurityConfig {
         httpSecurity
                 .authorizeHttpRequests(request ->
                         request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
-                        //.requestMatchers("/", "/index.html", "/js/**", "/css/**", "/images/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/js/**", "/css/**", "/images/**", "/login.html").permitAll()
+                         .requestMatchers("/login.html", "/style.css", "/app.js", "/favicon.ico").permitAll()
                         // .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
