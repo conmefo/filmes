@@ -3,115 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>AI Filter Chat</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-            margin: 0;
-        }
-
-        /* Left panel: friends list */
-        #friendsPanel {
-            width: 20%;
-            border-right: 1px solid #ccc;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        #friendsPanel h3 {
-            margin-top: 0;
-        }
-
-        .friend {
-            padding: 5px;
-            cursor: pointer;
-        }
-
-        .friend:hover {
-            background-color: #f0f0f0;
-        }
-
-        /* Center panel: chat area */
-        #chatPanel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        #chatArea {
-            flex: 1;
-            border: 1px solid #ccc;
-            padding: 10px;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            background-color: #fafafa;
-        }
-
-        #chatControls {
-            display: flex;
-        }
-
-        #messageInput {
-            flex: 1;
-            padding: 5px;
-            font-size: 14px;
-        }
-
-        #sendButton {
-            padding: 5px 10px;
-            margin-left: 5px;
-        }
-    </style>
-
-    <!-- Include SockJS and STOMP.js -->
-    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-    <!-- Include our chat JS -->
-    <script src="/js/chat.js"></script>
+    <link rel="stylesheet" href="/css/style.css"> <!-- You can use the same style.css -->
 </head>
 <body>
-    <!-- Friends Panel -->
-    <div id="friendsPanel">
-        <h3>Friends</h3>
-        <div id="friendsList">
-            <!-- Example friends (later fetch dynamically from backend) -->
-            <div class="friend" onclick="selectFriend('alice')">alice</div>
-            <div class="friend" onclick="selectFriend('bob')">bob</div>
-            <div class="friend" onclick="selectFriend('charlie')">charlie</div>
+    <div id="chat-container">
+        <div id="user-info">
+            Logged in as: <strong id="username-display"></strong>
+            <button id="logout-button">Logout</button>
         </div>
+        <h1>Welcome to the Chat!</h1>
+        <!-- We will add the friend list and chat window here later -->
     </div>
 
-    <!-- Chat Panel -->
-    <div id="chatPanel">
-        <div id="chatArea"></div>
-        <div id="chatControls">
-            <input type="text" id="messageInput" placeholder="Type your message..." />
-            <button id="sendButton" onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-
-    <script>
-        let selectedFriend = null;
-
-        function selectFriend(friendUsername) {
-            selectedFriend = friendUsername;
-            document.getElementById('toUser').value = selectedFriend;
-
-            // Clear chat area when switching friends
-            document.getElementById('chatArea').innerHTML = '';
-
-            // TODO: Fetch chat history from backend via REST API
-            console.log("Selected friend:", selectedFriend);
-        }
-
-        // Create a hidden input to store selected friend for chat.js
-        const toUserInput = document.createElement('input');
-        toUserInput.type = 'hidden';
-        toUserInput.id = 'toUser';
-        document.body.appendChild(toUserInput);
-    </script>
+    <!-- JS libraries for WebSocket -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    
+    <!-- Your application script -->
+    <script src="/js/chat.js"></script>
 </body>
 </html>

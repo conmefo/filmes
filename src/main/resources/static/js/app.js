@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // IMPORTANT: Save the JWT token to localStorage
                 localStorage.setItem('jwtToken', token);
-                localStorage.setItem('username', username); z
+                localStorage.setItem('username', username); 
 
                 // Redirect to the main chat page after a short delay
                 setTimeout(() => {
