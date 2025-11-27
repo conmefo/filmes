@@ -1,5 +1,6 @@
 package com.filmes.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class FriendController {
     }
 
     @PutMapping("/accept")
-    ApiResponse<Friends> acceptRequest(@RequestBody FriendRequest request) {
+    ApiResponse<Friends> acceptRequest(@RequestBody FriendRequest request) throws Exception {
         return ApiResponse.<Friends>builder()
                 .result(friendService.acceptFriendRequest(request.getUserSendName(), request.getUserReceivingName()))
                 .build();

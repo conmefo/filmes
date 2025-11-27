@@ -1,5 +1,6 @@
 package com.filmes.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.filmes.enums.FriendShip;
 import com.filmes.exception.AppException;
-import com.filmes.exception.ErrorCode; 
+import com.filmes.exception.ErrorCode;
 import com.filmes.model.Friends;
 import com.filmes.repository.FriendListRepository;
 import com.filmes.repository.FriendRepository;
@@ -26,10 +27,9 @@ public class FriendService {
     @Autowired
     FriendListRepository friendListRepository;
 
-
     public Friends sendFriendRequest(String senderUsername, String receiverUsername) {
-        if (userRepository.findUserByUsername(senderUsername) == null || 
-            userRepository.findUserByUsername(receiverUsername) == null) {
+        if (userRepository.findUserByUsername(senderUsername) == null ||
+                userRepository.findUserByUsername(receiverUsername) == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
 
@@ -46,30 +46,29 @@ public class FriendService {
         return friendRepository.saveFriend(newFriend);
     }
 
-    public Friends acceptFriendRequest(String senderUsername, String receiverUsername) {
-    Friends friend = friendRepository.findFriendship(senderUsername, receiverUsername);
+    public Friends acceptFriendRequest(String senderUsername, String receiverUsername) throws IOException {
+        Friends friend = friendRepository.findFriendship(senderUsername, receiverUsername);
 
-    if (friend == null) {
-        throw new AppException(ErrorCode.FRIEND_REQUEST_NOT_FOUND);
+        if (friend == null) {
+            throw new AppException(ErrorCode.FRIEND_REQUEST_NOT_FOUND);
+        }
+
+        if (friend.getFriendShip() == FriendShip.ACCEPTED) {
+            throw new AppException(ErrorCode.FRIENDSHIP_ALREADY_EXISTS);
+        }
+
+        friend.setFriendShip(FriendShip.ACCEPTED);
+        friendRepository.updateFriendship(friend);
+
+        friendListRepository.addFriend(senderUsername, receiverUsername);
+        friendListRepository.addFriend(receiverUsername, senderUsername);
+
+        return friend;
     }
-
-    if (friend.getFriendShip() == FriendShip.ACCEPTED) {
-        throw new AppException(ErrorCode.FRIENDSHIP_ALREADY_EXISTS);
-    }
-
-    friend.setFriendShip(FriendShip.ACCEPTED);
-    friendRepository.updateFriendship(friend);
-
-    friendListRepository.addFriend(senderUsername, receiverUsername);
-    friendListRepository.addFriend(receiverUsername, senderUsername);
-
-    return friend;
-}
-
 
     public Friends rejectFriendRequest(String senderUsername, String receiverUsername) {
         Friends friend = friendRepository.findFriendship(senderUsername, receiverUsername);
-        
+
         if (friend == null) {
             throw new AppException(ErrorCode.FRIEND_REQUEST_NOT_FOUND);
         }
