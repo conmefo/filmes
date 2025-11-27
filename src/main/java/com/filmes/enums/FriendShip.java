@@ -1,6 +1,6 @@
 package com.filmes.enums;
 
-public enum FriendStatus {
+public enum FriendShip {
     ACCEPTED,
     REJECTED,
     PENDING

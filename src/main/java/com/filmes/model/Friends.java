@@ -1,6 +1,6 @@
 package com.filmes.model;
 
-import com.filmes.enums.FriendStatus;
+import com.filmes.enums.FriendShip;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,11 +12,11 @@ import lombok.NoArgsConstructor;
 public class Friends {
     private String userSendName;
     private String userReceivingName;
-    private FriendStatus friendStatus;
+    private FriendShip friendShip;
 
     @Override
     public String toString() {
-        String statusStr = (friendStatus != null) ? friendStatus.name() : "";
+        String statusStr = (friendShip != null) ? friendShip.name() : "";
         return userSendName + "|" + userReceivingName + "|" + statusStr;
     }
 
@@ -29,14 +29,14 @@ public class Friends {
         String userSendName = parts[0];
         String userReceivingName = parts[1];
 
-        FriendStatus status = null;
+        FriendShip friendShip = null;
         if (parts.length > 2 && !parts[2].isEmpty()) {
             try {
-                status = FriendStatus.valueOf(parts[2]);
+                friendShip = FriendShip.valueOf(parts[2]);
             } catch (IllegalArgumentException e) {
             }
         }
 
-        return new Friends(userSendName, userReceivingName, status);
+        return new Friends(userSendName, userReceivingName, friendShip);
     }
 }
