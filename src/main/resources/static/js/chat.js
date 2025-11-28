@@ -406,11 +406,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 content: messageContent,
                 timestamp: new Date().toISOString()
             };
-            // Send to the Spring @MessageMapping endpoint
+            
             stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage));
-            messageInput.value = ''; // Clear input
+            console.log('Sent message:', chatMessage);
+            messageInput.value = ''; 
 
-            // Display your own message immediately without waiting for echo
+            
             displayMessage(chatMessage);
         }
     };
