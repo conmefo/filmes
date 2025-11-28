@@ -196,10 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         console.log(`Searching for users with query: ${query}`);
         try {
-            // !!! IMPORTANT: You NEED to implement this backend endpoint !!!
-            // Example: GET /api/users/search?query={query}
-            // For now, this is a placeholder.
-            const response = await fetchWithAuth(`/api/users/search?query=${query}`); // Use fetchWithAuth
+            const response = await fetchWithAuth(
+                `/api/users/search?query=${encodeURIComponent(query)}&requesterUsername=${encodeURIComponent(username)}`
+            );
             if (!response.ok) {
                 const errorText = await response.text();
                 console.error(`Failed to search users. Status: ${response.status}, Error: ${errorText}`);
@@ -210,17 +209,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const users = apiResponse.result; // ["cm102"]
             searchResultsContainer.innerHTML = '';
             if (users && users.length > 0) {
-                users.forEach(user => {
-                    if (user !== username) { // compare directly with string
+                users.forEach(u => {
+                    if (u.username !== username) {
                         const div = document.createElement('div');
                         div.className = 'search-result-item';
+
+                        let actionHtml = '';
+
+                        if (u.friendStatus === "NOT_FRIEND") {
+                            actionHtml = `
+                                <button class="send-request-btn" data-recipient="${u.username}">
+                                    Send Request
+                                </button>
+                            `;
+                        } else if (u.friendStatus === "PENDING") {
+                            actionHtml = `<span class="status pending">Pending...</span>`;
+                        } else if (u.friendStatus === "FRIEND") {
+                            actionHtml = `<span class="status friend">Friend</span>`;
+                        }
+
                         div.innerHTML = `
-                <span>${user}</span>
-                <button class="send-request-btn" data-recipient="${user}">Send Request</button>
-            `;
+                            <span>${u.username}</span>
+                            ${actionHtml}
+                        `;
+
                         searchResultsContainer.appendChild(div);
                     }
                 });
+
+
             } else {
                 searchResultsContainer.innerHTML = '<div>No users found.</div>';
             }

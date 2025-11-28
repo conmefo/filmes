@@ -51,11 +51,19 @@ public class UserController {
     }
 
     @GetMapping("/users/search")
-    public ApiResponse<List<SearchUserResponse>> searchUserName(@RequestBody SearchUserRequest request) {
+    public ApiResponse<List<SearchUserResponse>> searchUserName(
+            @RequestParam String query,
+            @RequestParam String requesterUsername) {
+
+        SearchUserRequest request = new SearchUserRequest();
+        request.setQuery(query);
+        request.setRequesterUsername(requesterUsername);
+
         return ApiResponse.<List<SearchUserResponse>>builder()
                 .result(userService.searchUserName(request))
                 .build();
     }
+
 
         
 

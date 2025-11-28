@@ -92,6 +92,7 @@ public class FriendListRepository {
 
     public static boolean existFriendship(String requesterUsername, String username) {
         Path userFile = Paths.get(FOLDER_NAME, requesterUsername + ".txt");
+
         if (!Files.exists(userFile)) {
             return false;
         }
