@@ -1,14 +1,18 @@
 package com.filmes.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.filmes.dto.request.SearchUserRequest;
 import com.filmes.dto.request.UserCreationRequest;
 import com.filmes.dto.request.UserUpdateRequest;
 import com.filmes.dto.response.ApiResponse;
+import com.filmes.dto.response.SearchUserResponse;
 import com.filmes.dto.response.UserResponse;
 import com.filmes.model.User;
 import com.filmes.repository.DataRepository;
@@ -45,6 +49,15 @@ public class UserController {
                 .result(userService.getAllUsers())
                 .build();
     }
+
+    @GetMapping("/users/search")
+    public ApiResponse<List<SearchUserResponse>> searchUserName(@RequestBody SearchUserRequest request) {
+        return ApiResponse.<List<SearchUserResponse>>builder()
+                .result(userService.searchUserName(request))
+                .build();
+    }
+
+        
 
     // @GetMapping("/myInfo")
     // ApiResponse<UserResponse> getMyInfo(@PathVariable String userId) {

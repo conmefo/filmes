@@ -89,4 +89,19 @@ public class FriendListRepository {
                 .findFirst()
                 .orElse("");
     }
+
+    public static boolean existFriendship(String requesterUsername, String username) {
+        Path userFile = Paths.get(FOLDER_NAME, requesterUsername + ".txt");
+        if (!Files.exists(userFile)) {
+            return false;
+        }
+
+        try {
+            return Files.lines(userFile)
+                    .anyMatch(line -> line.startsWith(username + ","));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
