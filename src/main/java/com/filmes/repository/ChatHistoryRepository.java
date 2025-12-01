@@ -32,7 +32,7 @@ public class ChatHistoryRepository {
         }
     }
 
-    public List<Message> getHistory(String userA, String userB) {
+    public List<Message> getChatHistory(String userA, String userB) {
         List<Message> messages = new ArrayList<>();
         File chatFile = dataRepository.createTable(getChatFileName(userA, userB));
         if (chatFile == null) return messages;
@@ -58,9 +58,9 @@ public class ChatHistoryRepository {
      */
     private String getChatFileName(String userA, String userB) {
         if (userA.compareTo(userB) < 0) {
-            return "chat_" + userA + "_" + userB + ".txt";
+            return "chat_" + userA + "_" + userB;
         } else {
-            return "chat_" + userB + "_" + userA + ".txt";
+            return "chat_" + userB + "_" + userA;
         }
     }
 }
