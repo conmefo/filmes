@@ -353,7 +353,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Connected to WebSocket!');
         // Subscribe to a public topic for this user to receive direct messages
         stompClient.subscribe(`/topic/public/${username}`, onMessageReceived);
-
         // Enable chat input and send button
         messageInput.disabled = false;
         sendButton.disabled = false;
@@ -370,14 +369,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const onMessageReceived = (payload) => {
         const message = JSON.parse(payload.body);
         console.log('Message received:', message);
-
-        // Only display messages from the currently active chat friend
         if (currentChatFriend && (message.fromUser === currentChatFriend || message.toUser === currentChatFriend && message.fromUser === username)) {
             displayMessage(message);
         } else if (message.fromUser !== username) {
-            // Optionally, show a notification for messages from other friends
             console.log(`New message from ${message.fromUser} (not current chat).`);
-            // You could add a visual indicator next to the friend's name
         }
     };
 
@@ -393,6 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="message-content">${message.content}</span>
             <span class="message-time">${new Date(message.timestamp || Date.now()).toLocaleTimeString()}</span>
         `;
+
+        console.log('Displaying message:', message.fromUser, message.content);
         chatMessagesContainer.appendChild(messageElement);
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
     };
@@ -423,11 +420,8 @@ document.addEventListener('DOMContentLoaded', () => {
         messageInput.placeholder = `Type a message to ${currentChatFriend}...`;
         messageInput.disabled = false;
         sendButton.disabled = false;
-
-        // Optionally, load chat history here
         await fetchChatHistory(friendName);
-
-        // Highlight the selected friend in the list
+        console.log(`Chat history loaded for ${username} with ${friendName}`);
         document.querySelectorAll('.friend-item').forEach(item => {
             item.classList.remove('selected-friend');
         });
@@ -437,8 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fetchChatHistory = async (friendName) => {
         console.log(`Fetching chat history for ${username} with ${friendName}`);
         try {
-            // !!! IMPORTANT: You NEED to implement this backend endpoint !!!
-            // Example: GET /api/chat/history?user1={username}&user2={friendName}
             const response = await fetchWithAuth(`/api/chat/history?user1=${username}&user2=${friendName}`);
             if (!response.ok) {
                 const errorText = await response.text();
@@ -446,8 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatMessagesContainer.innerHTML += `<p class="system-message error">Error loading history: ${errorText}</p>`;
                 return;
             }
-            const apiResponse = await response.json(); // Assuming it returns a list of chat messages
+            const apiResponse = await response.json(); 
             if (apiResponse.result && apiResponse.result.length > 0) {
+                console.log('Displaying chat history messages');
                 apiResponse.result.forEach(message => displayMessage(message));
             } else {
                 chatMessagesContainer.innerHTML += `<p class="system-message">No chat history found.</p>`;
@@ -499,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // These functions run when the page first loads
     fetchAndDisplayFriends();
     fetchAndDisplayPendingRequests();
-    fetchAndDisplayStylePrompt(); // Load the user's current style
+   // fetchAndDisplayStylePrompt(); // Load the user's current style
     connectWebSocket(); // Establish WebSocket connection
 
 

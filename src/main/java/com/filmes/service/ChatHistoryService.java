@@ -18,6 +18,7 @@ public class ChatHistoryService {
     }
 
     public List<Message> getChatHistory(String user1, String user2) {
+        System.out.println("Fetching chat history between " + user1 + " and " + user2);
         return chatHistoryRepository.getChatHistory(user1, user2);
     }
 }

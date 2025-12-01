@@ -53,7 +53,7 @@ public class UserController {
     @GetMapping("/users/search")
     public ApiResponse<List<SearchUserResponse>> searchUserName(
             @RequestParam String query,
-            @RequestParam String requesterUsername) {
+            @RequestParam String requesterUsername) { 
 
         SearchUserRequest request = new SearchUserRequest();
         request.setQuery(query);
