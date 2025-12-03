@@ -52,10 +52,6 @@ public class ChatHistoryRepository {
         return messages;
     }
 
-    /**
-     * Utility: generate a consistent filename for a chat between two users
-     * Always alphabetical to avoid duplicate files like "alice_bob" vs "bob_alice"
-     */
     private String getChatFileName(String userA, String userB) {
         if (userA.compareTo(userB) < 0) {
             return "chat_" + userA + "_" + userB;

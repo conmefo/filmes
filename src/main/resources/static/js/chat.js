@@ -1,21 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- API HELPER FUNCTION (placed at the top for scope) ---
-    // This function adds the JWT token to the Authorization header for protected API calls.
     const fetchWithAuth = async (url, options = {}) => {
-        const token = localStorage.getItem('jwtToken'); // Get the JWT token from local storage
+        const token = localStorage.getItem('jwtToken'); 
 
-        // Initialize headers if not already present
         if (!options.headers) {
             options.headers = {};
         }
 
-        // Add the Authorization header if a token exists
         if (token) {
             options.headers['Authorization'] = `Bearer ${token}`;
         }
 
-        // Ensure Content-Type is set for requests with a body
         if (options.body && !options.headers['Content-Type']) {
             options.headers['Content-Type'] = 'application/json';
         }
@@ -23,36 +18,30 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(url, options);
 
-            // If the server responds with 401 (Unauthorized) or 403 (Forbidden),
-            // it means the token is invalid, expired, or missing on a protected route.
-            // Redirect the user to the login page.
             if (response.status === 401 || response.status === 403) {
                 console.warn('Authentication failed. Redirecting to login.');
-                localStorage.removeItem('jwtToken'); // Clear invalid token
-                localStorage.removeItem('username'); // Clear username
+                localStorage.removeItem('jwtToken'); 
+                localStorage.removeItem('username'); 
                 window.location.href = '/login.html';
-                // Important: Throw an error to stop further processing in the calling function
                 throw new Error('Unauthorized or Forbidden access');
             }
 
             return response;
         } catch (error) {
             console.error('Network error or fetch failed:', error);
-            // Re-throw the error so calling functions can handle it if needed
             throw error;
         }
     };
 
 
-    // 1. Get username from local storage and check if logged in
     const username = localStorage.getItem('username');
     if (!username) {
         console.warn('No username found. Redirecting to login.');
-        window.location.href = '/login.html'; // Redirect if not logged in
-        return; // Stop further execution
+        window.location.href = '/login.html'; 
+        return;
     }
 
-    // 2. Get all necessary HTML elements
+
     const usernameDisplay = document.getElementById('username-display');
     const logoutButton = document.getElementById('logout-button');
     const searchInput = document.getElementById('search-input');
@@ -61,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const pendingRequestsList = document.getElementById('pending-requests-list');
     const friendsList = document.getElementById('friends-list');
 
-    // Chat related elements
     const chatMessagesContainer = document.getElementById('chat-messages');
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
@@ -69,18 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveStyleButton = document.getElementById('save-style-button');
 
 
-    // State variables for the chat
-    let currentChatFriend = null; // Stores the username of the friend currently chatting with
-    let stompClient = null; // WebSocket STOMP client
+    let currentChatFriend = null; 
+    let stompClient = null;
 
 
-    // Set username display and handle logout
     usernameDisplay.textContent = username;
     logoutButton.addEventListener('click', () => {
         console.log('Logout button clicked. Clearing local storage and redirecting.');
-        localStorage.removeItem('jwtToken'); // Clear the JWT token
-        localStorage.removeItem('username'); // Clear the username
-        // Disconnect WebSocket if connected
+        localStorage.removeItem('jwtToken'); 
+        localStorage.removeItem('username'); 
         if (stompClient && stompClient.connected) {
             stompClient.disconnect(() => console.log('WebSocket disconnected on logout.'));
         }
@@ -88,9 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // --- API & DISPLAY FUNCTIONS ---
-
-    // Fetches and displays the user's current friends
     const fetchAndDisplayFriends = async () => {
         console.log(`Fetching friend list for ${username}...`);
         try {
@@ -102,14 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const apiResponse = await response.json();
-            friendsList.innerHTML = ''; // Clear current list
+            friendsList.innerHTML = ''; 
 
             if (apiResponse.result && apiResponse.result.length > 0) {
                 apiResponse.result.forEach(friend => {
                     const li = document.createElement('li');
                     li.className = 'friend-item';
                     li.textContent = friend;
-                    li.dataset.friendName = friend; // Store friend name for click events
+                    li.dataset.friendName = friend; 
                     li.addEventListener('click', () => startChatWithFriend(friend));
                     friendsList.appendChild(li);
                 });
@@ -122,7 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Fetches and displays pending friend requests
     const fetchAndDisplayPendingRequests = async () => {
         console.log(`Fetching pending requests for ${username}...`);
         try {
@@ -134,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const apiResponse = await response.json();
-            pendingRequestsList.innerHTML = ''; // Clear current list
+            pendingRequestsList.innerHTML = ''; 
 
             if (apiResponse.result && apiResponse.result.length > 0) {
                 apiResponse.result.forEach(request => {
@@ -158,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Handles accepting or rejecting a friend request
     const handleRequestAction = async (sender, action) => {
         console.log(`Handling request action: ${action} from ${sender} by ${username}`);
         try {
@@ -179,7 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(`Request ${action} successful:`, apiResponse.result);
             alert(`Friend request ${action}ed successfully!`);
 
-            // Refresh both lists after action
             fetchAndDisplayFriends();
             fetchAndDisplayPendingRequests();
         } catch (error) {
@@ -188,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Search for users to add as friends
     const searchUsers = async (query) => {
         if (!query.trim()) {
             searchResultsContainer.innerHTML = '';
@@ -205,8 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchResultsContainer.innerHTML = `<div>Error searching: ${errorText}</div>`;
                 return;
             }
-            const apiResponse = await response.json(); // Assuming the backend returns an array of users
-            const users = apiResponse.result; // ["cm102"]
+            const apiResponse = await response.json(); 
+            const users = apiResponse.result; 
             searchResultsContainer.innerHTML = '';
             if (users && users.length > 0) {
                 users.forEach(u => {
@@ -247,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Send a friend request
     const sendFriendRequest = async (recipient) => {
         console.log(`Sending friend request from ${username} to ${recipient}`);
         try {
@@ -267,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const apiResponse = await response.json();
             if (apiResponse.result) {
                 alert("Friend request sent!");
-                searchResultsContainer.innerHTML = ''; // Clear results after sending
+                searchResultsContainer.innerHTML = '';
             } else {
                 alert("Failed to send friend request. (Check if already sent/friend)");
             }
@@ -278,12 +255,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Fetches and displays the user's current AI style prompt
     const fetchAndDisplayStylePrompt = async () => {
         console.log(`Fetching style prompt for ${username}...`);
         try {
-            // !!! IMPORTANT: You NEED to implement this backend endpoint !!!
-            // Example: GET /api/users/${username}/style
             const response = await fetchWithAuth(`/api/users/${username}/style`);
             if (!response.ok) {
                 const errorText = await response.text();
@@ -291,11 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 stylePromptInput.value = 'Error loading style.';
                 return;
             }
-            const apiResponse = await response.json(); // Assuming { "stylePrompt": "..." }
+            const apiResponse = await response.json(); 
             if (apiResponse.result && apiResponse.result.stylePrompt) {
                 stylePromptInput.value = apiResponse.result.stylePrompt;
             } else {
-                stylePromptInput.value = ''; // No style set yet
+                stylePromptInput.value = ''; 
             }
         } catch (error) {
             console.error('Error in fetchAndDisplayStylePrompt:', error);
@@ -303,13 +277,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Saves the user's AI style prompt
     const saveStylePrompt = async () => {
         const newStyle = stylePromptInput.value.trim();
         console.log(`Saving style prompt for ${username}: ${newStyle}`);
         try {
-            // !!! IMPORTANT: You NEED to implement this backend endpoint !!!
-            // Example: PUT /api/users/${username}/style
             const response = await fetchWithAuth(`/api/users/${username}/style`, {
                 method: 'PUT',
                 body: JSON.stringify({ stylePrompt: newStyle })
@@ -321,14 +292,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             alert('AI style saved successfully!');
-            // You might want to refresh current style or do other actions
         } catch (error) {
             console.error('Error in saveStylePrompt:', error);
             alert('Network error or failed to save style.');
         }
     };
 
-    // --- WEBSOCKET CHAT FUNCTIONS ---
 
     const connectWebSocket = () => {
         if (stompClient && stompClient.connected) {
@@ -337,11 +306,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         console.log('Attempting to connect WebSocket...');
-        // Replace with your actual WebSocket endpoint
-        const socket = new SockJS('/ws-chat'); // The endpoint you configured in Spring
+        const socket = new SockJS('/ws-chat'); 
         stompClient = Stomp.over(socket);
 
-        // Pass the JWT token as a header during connection
         const headers = {
             'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
         };
@@ -351,9 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const onConnected = () => {
         console.log('Connected to WebSocket!');
-        // Subscribe to a public topic for this user to receive direct messages
         stompClient.subscribe(`/topic/public/${username}`, onMessageReceived);
-        // Enable chat input and send button
         messageInput.disabled = false;
         sendButton.disabled = false;
         chatMessagesContainer.innerHTML = '<p class="system-message">WebSocket connected. Select a friend to chat.</p>';
@@ -369,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const onMessageReceived = (payload) => {
         const message = JSON.parse(payload.body);
         console.log('Message received:', message);
-        if (currentChatFriend && (message.fromUser === currentChatFriend || message.toUser === currentChatFriend && message.fromUser === username)) {
+        if (currentChatFriend && (message.fromUser === currentChatFriend && message.fromUser === username)) {
             displayMessage(message);
         } else if (message.fromUser !== username) {
             console.log(`New message from ${message.fromUser} (not current chat).`);
@@ -452,7 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // --- EVENT LISTENERS ---
 
     searchButton.addEventListener('click', () => searchUsers(searchInput.value));
     searchInput.addEventListener('keypress', (e) => {
@@ -488,12 +452,10 @@ document.addEventListener('DOMContentLoaded', () => {
     saveStyleButton.addEventListener('click', saveStylePrompt);
 
 
-    // --- INITIALIZATION ---
-    // These functions run when the page first loads
     fetchAndDisplayFriends();
     fetchAndDisplayPendingRequests();
-   // fetchAndDisplayStylePrompt(); // Load the user's current style
-    connectWebSocket(); // Establish WebSocket connection
+   // fetchAndDisplayStylePrompt(); 
+    connectWebSocket(); 
 
 
     console.log('Chat page loaded successfully for user:', username);
