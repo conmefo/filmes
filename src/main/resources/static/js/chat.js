@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     const fetchWithAuth = async (url, options = {}) => {
-        const token = localStorage.getItem('jwtToken'); 
+        const token = localStorage.getItem('jwtToken');
 
         if (!options.headers) {
             options.headers = {};
@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.status === 401 || response.status === 403) {
                 console.warn('Authentication failed. Redirecting to login.');
-                localStorage.removeItem('jwtToken'); 
-                localStorage.removeItem('username'); 
+                localStorage.removeItem('jwtToken');
+                localStorage.removeItem('username');
                 window.location.href = '/login.html';
                 throw new Error('Unauthorized or Forbidden access');
             }
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const username = localStorage.getItem('username');
     if (!username) {
         console.warn('No username found. Redirecting to login.');
-        window.location.href = '/login.html'; 
+        window.location.href = '/login.html';
         return;
     }
 
@@ -57,15 +57,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveStyleButton = document.getElementById('save-style-button');
 
 
-    let currentChatFriend = null; 
+    let currentChatFriend = null;
     let stompClient = null;
 
 
     usernameDisplay.textContent = username;
     logoutButton.addEventListener('click', () => {
         console.log('Logout button clicked. Clearing local storage and redirecting.');
-        localStorage.removeItem('jwtToken'); 
-        localStorage.removeItem('username'); 
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('username');
         if (stompClient && stompClient.connected) {
             stompClient.disconnect(() => console.log('WebSocket disconnected on logout.'));
         }
@@ -84,14 +84,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const apiResponse = await response.json();
-            friendsList.innerHTML = ''; 
+            friendsList.innerHTML = '';
 
             if (apiResponse.result && apiResponse.result.length > 0) {
                 apiResponse.result.forEach(friend => {
                     const li = document.createElement('li');
                     li.className = 'friend-item';
                     li.textContent = friend;
-                    li.dataset.friendName = friend; 
+                    li.dataset.friendName = friend;
                     li.addEventListener('click', () => startChatWithFriend(friend));
                     friendsList.appendChild(li);
                 });
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             const apiResponse = await response.json();
-            pendingRequestsList.innerHTML = ''; 
+            pendingRequestsList.innerHTML = '';
 
             if (apiResponse.result && apiResponse.result.length > 0) {
                 apiResponse.result.forEach(request => {
@@ -183,8 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchResultsContainer.innerHTML = `<div>Error searching: ${errorText}</div>`;
                 return;
             }
-            const apiResponse = await response.json(); 
-            const users = apiResponse.result; 
+            const apiResponse = await response.json();
+            const users = apiResponse.result;
             searchResultsContainer.innerHTML = '';
             if (users && users.length > 0) {
                 users.forEach(u => {
@@ -265,11 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 stylePromptInput.value = 'Error loading style.';
                 return;
             }
-            const apiResponse = await response.json(); 
+            const apiResponse = await response.json();
             if (apiResponse.result && apiResponse.result.stylePrompt) {
                 stylePromptInput.value = apiResponse.result.stylePrompt;
             } else {
-                stylePromptInput.value = ''; 
+                stylePromptInput.value = '';
             }
         } catch (error) {
             console.error('Error in fetchAndDisplayStylePrompt:', error);
@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         console.log('Attempting to connect WebSocket...');
-        const socket = new SockJS('/ws-chat'); 
+        const socket = new SockJS('/ws-chat');
         stompClient = Stomp.over(socket);
 
         const headers = {
@@ -342,21 +342,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const displayMessage = (message) => {
-        const messageElement = document.createElement('div');
+        const messageElement = document.createElement('p');
         messageElement.classList.add('chat-message');
 
         const senderClass = message.fromUser === username ? 'message-sent' : 'message-received';
         messageElement.classList.add(senderClass);
 
         messageElement.innerHTML = `
-            <span class="message-sender">${message.fromUser}:</span>
             <span class="message-content">${message.content}</span>
-            <span class="message-time">${new Date(message.timestamp || Date.now()).toLocaleTimeString()}</span>
         `;
 
         console.log('Displaying message:', message.fromUser, message.content);
         chatMessagesContainer.appendChild(messageElement);
-        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight; // Scroll to bottom
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
     };
 
     const sendMessage = () => {
@@ -368,12 +366,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 content: messageContent,
                 timestamp: new Date().toISOString()
             };
-            
+
             stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage));
             console.log('Sent message:', chatMessage);
-            messageInput.value = ''; 
-
-            
+            messageInput.value = '';
             displayMessage(chatMessage);
         }
     };
@@ -403,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatMessagesContainer.innerHTML += `<p class="system-message error">Error loading history: ${errorText}</p>`;
                 return;
             }
-            const apiResponse = await response.json(); 
+            const apiResponse = await response.json();
             if (apiResponse.result && apiResponse.result.length > 0) {
                 console.log('Displaying chat history messages');
                 apiResponse.result.forEach(message => displayMessage(message));
@@ -454,8 +450,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchAndDisplayFriends();
     fetchAndDisplayPendingRequests();
-   // fetchAndDisplayStylePrompt(); 
-    connectWebSocket(); 
+    // fetchAndDisplayStylePrompt(); 
+    connectWebSocket();
 
 
     console.log('Chat page loaded successfully for user:', username);

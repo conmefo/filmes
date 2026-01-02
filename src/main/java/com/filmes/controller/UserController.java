@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
-
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -53,7 +51,7 @@ public class UserController {
     @GetMapping("/users/search")
     public ApiResponse<List<SearchUserResponse>> searchUserName(
             @RequestParam String query,
-            @RequestParam String requesterUsername) { 
+            @RequestParam String requesterUsername) {
 
         SearchUserRequest request = new SearchUserRequest();
         request.setQuery(query);
@@ -64,14 +62,11 @@ public class UserController {
                 .build();
     }
 
-
-        
-
     // @GetMapping("/myInfo")
     // ApiResponse<UserResponse> getMyInfo(@PathVariable String userId) {
-    //     return ApiResponse.<UserResponse>builder()
-    //             .result(userService.getMyInfo(userId))
-    //             .build();
+    // return ApiResponse.<UserResponse>builder()
+    // .result(userService.getMyInfo(userId))
+    // .build();
     // }
 
     @PutMapping("/{username}")

@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>AI Filter Chat</title>
     <link rel="stylesheet" href="/css/style.css">
-       <link rel="icon" href="data:,">
+    <link rel="icon" href="data:,">
 </head>
+
 <body>
     <div id="app-container">
-        <!-- LEFT PANEL for Friend Management -->
         <div id="left-panel">
             <div id="user-info">
                 Logged in as: <strong id="username-display"></strong>
                 <button id="logout-button">Logout</button>
             </div>
             <hr>
-            <!-- Friend Search -->
             <div id="search-container">
                 <h3>Find Users</h3>
                 <input type="text" id="search-input" placeholder="Enter username...">
@@ -23,24 +23,20 @@
                 <div id="search-results"></div>
             </div>
             <hr>
-            <!-- Pending Friend Requests -->
+
             <div id="requests-container">
                 <h3>Pending Requests</h3>
                 <ul id="pending-requests-list">
-                    <!-- Pending requests will be added here by JS -->
                 </ul>
             </div>
             <hr>
-            <!-- Friend List -->
             <div id="friends-container">
                 <h3>Friends</h3>
                 <ul id="friends-list">
-                    <!-- Friends will be added here by JS -->
                 </ul>
             </div>
         </div>
 
-        <!-- RIGHT PANEL for Chatting -->
         <div id="right-panel">
             <div id="chat-window">
                 <div id="chat-messages">
@@ -51,7 +47,6 @@
                     <button id="send-button" disabled>Send</button>
                 </div>
             </div>
-             <!-- Style Prompt Area -->
             <div id="style-prompt-container">
                 <h3>Your AI Style</h3>
                 <input type="text" id="style-prompt-input" placeholder="e.g., Make messages sound like a pirate">
@@ -60,11 +55,10 @@
         </div>
     </div>
 
-    <!-- JS Libraries for WebSocket -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
-    <!-- Your application script -->
     <script src="/js/chat.js"></script>
 </body>
+
 </html>

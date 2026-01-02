@@ -27,7 +27,7 @@ public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String secretKey;
 
-    private final String[] PUBLIC_ENDPOINT = { "/users", "/auth/token", "/auth/introspect", "/api/register"};
+    private final String[] PUBLIC_ENDPOINT = { "/users", "/auth/token", "/auth/introspect", "/api/register" };
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -37,11 +37,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .authorizeHttpRequests(request ->
-                        request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
-                        .requestMatchers("/", "/index.html", "/js/**", "/css/**", "/images/**", "/login.html").permitAll()
-                         .requestMatchers("/login.html", "/style.css", "/app.js", "/favicon.ico").permitAll()
-                          .requestMatchers("/ws-chat/**").permitAll()
+                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINT).permitAll()
+                        .requestMatchers("/", "/index.html", "/js/**", "/css/**", "/images/**", "/login.html",
+                                "/register.html")
+                        .permitAll()
+                        .requestMatchers("/login.html", "/style.css", "/app.js", "/favicon.ico").permitAll()
+                        .requestMatchers("/ws-chat/**").permitAll()
                         // .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
