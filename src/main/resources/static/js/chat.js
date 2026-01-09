@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const fetchWithAuth = async (url, options = {}) => {
+    const fetchWithJwt = async (url, options = {}) => {
         const token = localStorage.getItem('jwtToken');
 
         if (!options.headers) {
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(url, options);
 
             if (response.status === 401 || response.status === 403) {
-                console.warn('Authentication failed. Redirecting to login.');
                 localStorage.removeItem('jwtToken');
                 localStorage.removeItem('username');
                 window.location.href = '/login.html';
@@ -28,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return response;
         } catch (error) {
-            console.error('Network error or fetch failed:', error);
+            console.error(error);
             throw error;
         }
     };
@@ -36,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const username = localStorage.getItem('username');
     if (!username) {
-        console.warn('No username found. Redirecting to login.');
         window.location.href = '/login.html';
         return;
     }
@@ -59,34 +57,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentChatFriend = null;
     let stompClient = null;
-
+    let promptForFriend = "";
 
     usernameDisplay.textContent = username;
+
     logoutButton.addEventListener('click', () => {
-        console.log('Logout button clicked. Clearing local storage and redirecting.');
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('username');
         if (stompClient && stompClient.connected) {
-            stompClient.disconnect(() => console.log('WebSocket disconnected on logout.'));
+            stompClient.disconnect();
         }
         window.location.href = '/login.html';
     });
 
 
-    const fetchAndDisplayFriends = async () => {
-        console.log(`Fetching friend list for ${username}...`);
+    const fetchFriends = async () => {
         try {
-            const response = await fetchWithAuth(`/api/friends/${username}/list`);
+            const response = await fetchWithJwt(`/api/friends/${username}/list`);
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to fetch friends. Status: ${response.status}, Error: ${errorText}`);
+                console.error(response.status, errorText);
                 friendsList.innerHTML = `<li>Error loading friends: ${errorText}</li>`;
                 return;
             }
+
             const apiResponse = await response.json();
             friendsList.innerHTML = '';
 
-            if (apiResponse.result && apiResponse.result.length > 0) {
+            if (apiResponse.result) {
                 apiResponse.result.forEach(friend => {
                     const li = document.createElement('li');
                     li.className = 'friend-item';
@@ -96,21 +94,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     friendsList.appendChild(li);
                 });
             } else {
-                friendsList.innerHTML = '<li>No friends yet.</li>';
+                friendsList.innerHTML = '<li>No friends yet</li>';
             }
         } catch (error) {
-            console.error('Error in fetchAndDisplayFriends:', error);
-            friendsList.innerHTML = '<li>Network error or failed to load friends.</li>';
+            console.error(error);
+            friendsList.innerHTML = '<li>Network error</li>';
         }
     };
 
-    const fetchAndDisplayPendingRequests = async () => {
-        console.log(`Fetching pending requests for ${username}...`);
+    const fetchPending = async () => {
         try {
-            const response = await fetchWithAuth(`/api/friends/${username}/pending`);
+            const response = await fetchWithJwt(`/api/friends/${username}/pending`);
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to fetch pending requests. Status: ${response.status}, Error: ${errorText}`);
+                console.error(response.status, errorText);
                 pendingRequestsList.innerHTML = `<li>Error loading requests: ${errorText}</li>`;
                 return;
             }
@@ -131,18 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     pendingRequestsList.appendChild(li);
                 });
             } else {
-                pendingRequestsList.innerHTML = '<li>No pending requests.</li>';
+                pendingRequestsList.innerHTML = '<li>No pending requests</li>';
             }
         } catch (error) {
-            console.error('Error in fetchAndDisplayPendingRequests:', error);
-            pendingRequestsList.innerHTML = '<li>Network error or failed to load requests.</li>';
+            console.error(error);
+            pendingRequestsList.innerHTML = '<li>Network error</li>';
         }
     };
 
-    const handleRequestAction = async (sender, action) => {
-        console.log(`Handling request action: ${action} from ${sender} by ${username}`);
+    const handleRequest = async (sender, action) => {
         try {
-            const response = await fetchWithAuth(`/api/friends/${action}`, {
+            const response = await fetchWithJwt(`/api/friends/${action}`, {
                 method: 'PUT',
                 body: JSON.stringify({
                     userSendName: sender,
@@ -151,19 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to ${action} request. Status: ${response.status}, Error: ${errorText}`);
-                alert(`Failed to ${action} request: ${errorText}`);
+                console.error(response.status, errorText);
                 return;
             }
-            const apiResponse = await response.json();
-            console.log(`Request ${action} successful:`, apiResponse.result);
-            alert(`Friend request ${action}ed successfully!`);
-
-            fetchAndDisplayFriends();
-            fetchAndDisplayPendingRequests();
+            fetchFriends();
+            fetchPending();
         } catch (error) {
-            console.error(`Error handling request action ${action}:`, error);
-            alert(`Network error or failed to ${action} request.`);
+            console.error(error);
         }
     };
 
@@ -172,14 +162,13 @@ document.addEventListener('DOMContentLoaded', () => {
             searchResultsContainer.innerHTML = '';
             return;
         }
-        console.log(`Searching for users with query: ${query}`);
         try {
-            const response = await fetchWithAuth(
+            const response = await fetchWithJwt(
                 `/api/users/search?query=${encodeURIComponent(query)}&requesterUsername=${encodeURIComponent(username)}`
             );
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to search users. Status: ${response.status}, Error: ${errorText}`);
+                console.error(errorText);
                 searchResultsContainer.innerHTML = `<div>Error searching: ${errorText}</div>`;
                 return;
             }
@@ -201,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </button>
                             `;
                         } else if (u.friendStatus === "PENDING") {
-                            actionHtml = `<span class="status pending">Pending...</span>`;
+                            actionHtml = `<span class="status pending">Pending..</span>`;
                         } else if (u.friendStatus === "FRIEND") {
                             actionHtml = `<span class="status friend">Friend</span>`;
                         }
@@ -217,18 +206,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             } else {
-                searchResultsContainer.innerHTML = '<div>No users found.</div>';
+                searchResultsContainer.innerHTML = '<div>No users found</div>';
             }
         } catch (error) {
-            console.error('Error in searchUsers:', error);
-            searchResultsContainer.innerHTML = '<div>Network error or failed to search users.</div>';
+            console.error(error);
+            searchResultsContainer.innerHTML = '<div>Network errors</div>';
         }
     };
 
     const sendFriendRequest = async (recipient) => {
-        console.log(`Sending friend request from ${username} to ${recipient}`);
         try {
-            const response = await fetchWithAuth('/api/friends/request', {
+            const response = await fetchWithJwt('/api/friends/request', {
                 method: 'POST',
                 body: JSON.stringify({
                     userSendName: username,
@@ -237,75 +225,81 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to send request. Status: ${response.status}, Error: ${errorText}`);
-                alert(`Failed to send friend request: ${errorText}`);
+                console.error(errorText);
                 return;
             }
             const apiResponse = await response.json();
             if (apiResponse.result) {
-                alert("Friend request sent!");
                 searchResultsContainer.innerHTML = '';
-            } else {
-                alert("Failed to send friend request. (Check if already sent/friend)");
             }
 
         } catch (error) {
-            console.error('Error in sendFriendRequest:', error);
-            alert('Network error or failed to send friend request.');
+            console.error(error);
         }
     };
 
-    const fetchAndDisplayStylePrompt = async () => {
-        console.log(`Fetching style prompt for ${username}...`);
+    const fetchMyStylePrompt = async (friendName) => {
         try {
-            const response = await fetchWithAuth(`/api/users/${username}/style`);
+            const response = await fetchWithJwt(
+                `/api/users/${encodeURIComponent(username)}/style?friend=${encodeURIComponent(friendName)}`
+            );
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to fetch style prompt. Status: ${response.status}, Error: ${errorText}`);
-                stylePromptInput.value = 'Error loading style.';
+                console.error(errorText);
+                stylePromptInput.value = 'Error loading style';
+                currentStylePrompt = "";
                 return;
             }
+
             const apiResponse = await response.json();
-            if (apiResponse.result && apiResponse.result.stylePrompt) {
-                stylePromptInput.value = apiResponse.result.stylePrompt;
-            } else {
-                stylePromptInput.value = '';
-            }
+            const prompt = apiResponse.result?.stylePrompt ?? "";
+
+            currentStylePrompt = prompt;
+            stylePromptInput.value = prompt;
         } catch (error) {
-            console.error('Error in fetchAndDisplayStylePrompt:', error);
-            stylePromptInput.value = 'Network error.';
+            console.error(error);
+            stylePromptInput.value = 'Network error';
+            currentStylePrompt = "";
         }
     };
 
-    const saveStylePrompt = async () => {
+
+    const saveStylePromptForFriend = async () => {
+        if (!currentChatFriend) {
+            return;
+        }
+
         const newStyle = stylePromptInput.value.trim();
-        console.log(`Saving style prompt for ${username}: ${newStyle}`);
+
         try {
-            const response = await fetchWithAuth(`/api/users/${username}/style`, {
-                method: 'PUT',
-                body: JSON.stringify({ stylePrompt: newStyle })
-            });
+            const response = await fetchWithJwt(
+                `/api/users/${encodeURIComponent(username)}/style?friend=${encodeURIComponent(currentChatFriend)}`,
+                {
+                    method: 'PUT',
+                    body: JSON.stringify({ stylePrompt: newStyle })
+                }
+            );
+
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to save style prompt. Status: ${response.status}, Error: ${errorText}`);
-                alert(`Failed to save style: ${errorText}`);
+                console.error(errorText);
                 return;
             }
-            alert('AI style saved successfully!');
+
+            currentStylePrompt = newStyle;
         } catch (error) {
-            console.error('Error in saveStylePrompt:', error);
-            alert('Network error or failed to save style.');
+            console.error(error);
         }
     };
+
 
 
     const connectWebSocket = () => {
         if (stompClient && stompClient.connected) {
-            console.log('WebSocket already connected.');
             return;
         }
 
-        console.log('Attempting to connect WebSocket...');
         const socket = new SockJS('/ws-chat');
         stompClient = Stomp.over(socket);
 
@@ -317,29 +311,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const onConnected = () => {
-        console.log('Connected to WebSocket!');
         stompClient.subscribe(`/topic/public/${username}`, onMessageReceived);
         messageInput.disabled = false;
         sendButton.disabled = false;
-        chatMessagesContainer.innerHTML = '<p class="system-message">WebSocket connected. Select a friend to chat.</p>';
+        chatMessagesContainer.innerHTML = '<p class="system-message">WebSocket connected. Select a friend to chat</p>';
     };
 
     const onError = (error) => {
-        console.error('Could not connect to WebSocket server:', error);
-        chatMessagesContainer.innerHTML = '<p class="system-message error">Could not connect to chat. Please try again later.</p>';
+        console.error(error);
+        chatMessagesContainer.innerHTML = '<p class="system-message error">Could not connect to chat. Please try again later</p>';
         messageInput.disabled = true;
         sendButton.disabled = true;
     };
 
     const onMessageReceived = (payload) => {
         const message = JSON.parse(payload.body);
-        console.log('Message received:', message);
-        if (currentChatFriend && (message.fromUser === currentChatFriend && message.fromUser === username)) {
-            displayMessage(message);
-        } else if (message.fromUser !== username) {
-            console.log(`New message from ${message.fromUser} (not current chat).`);
-        }
+
+        const isCurrentConversation =
+            currentChatFriend &&
+            (
+                (message.fromUser === currentChatFriend && message.toUser === username) ||
+                (message.fromUser === username && message.toUser === currentChatFriend)
+            );
+
+        if (isCurrentConversation) displayMessage(message);
     };
+
 
     const displayMessage = (message) => {
         const messageElement = document.createElement('p');
@@ -359,56 +356,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const sendMessage = () => {
         const messageContent = messageInput.value.trim();
-        if (messageContent && currentChatFriend) {
-            const chatMessage = {
-                fromUser: username,
-                toUser: currentChatFriend,
-                content: messageContent,
-                timestamp: new Date().toISOString()
-            };
+        if (!messageContent || !currentChatFriend) return;
 
-            stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage));
-            console.log('Sent message:', chatMessage);
-            messageInput.value = '';
-            displayMessage(chatMessage);
-        }
+        const chatMessage = {
+            fromUser: username,
+            toUser: currentChatFriend,
+            content: messageContent,
+            timestamp: new Date().toISOString(),
+            prompt: promptForFriend
+        };
+
+        stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage));
+        console.log('Sent message:', chatMessage);
+
+        messageInput.value = '';
     };
+
 
     const startChatWithFriend = async (friendName) => {
         currentChatFriend = friendName;
-        console.log(`Starting chat with: ${currentChatFriend}`);
-        chatMessagesContainer.innerHTML = `<p class="system-message">Chatting with ${currentChatFriend}</p>`; // Clear previous chat
+        chatMessagesContainer.innerHTML = `<p class="system-message">Chatting with ${currentChatFriend}</p>`;
         messageInput.placeholder = `Type a message to ${currentChatFriend}...`;
         messageInput.disabled = false;
         sendButton.disabled = false;
+
         await fetchChatHistory(friendName);
-        console.log(`Chat history loaded for ${username} with ${friendName}`);
-        document.querySelectorAll('.friend-item').forEach(item => {
-            item.classList.remove('selected-friend');
-        });
+        await fetchMyStylePrompt(friendName);
+        await fetchPromptForFriend(friendName);
+
+        document.querySelectorAll('.friend-item').forEach(item => item.classList.remove('selected-friend'));
         document.querySelector(`li[data-friend-name="${friendName}"]`).classList.add('selected-friend');
     };
 
+
     const fetchChatHistory = async (friendName) => {
-        console.log(`Fetching chat history for ${username} with ${friendName}`);
         try {
-            const response = await fetchWithAuth(`/api/chat/history?user1=${username}&user2=${friendName}`);
+            const response = await fetchWithJwt(`/api/chat/history?user1=${username}&user2=${friendName}`);
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`Failed to fetch chat history. Status: ${response.status}, Error: ${errorText}`);
-                chatMessagesContainer.innerHTML += `<p class="system-message error">Error loading history: ${errorText}</p>`;
+                console.error(response.status, errorText);
+                chatMessagesContainer.innerHTML += `<p class="system-message error">Error ${errorText}</p>`;
                 return;
             }
             const apiResponse = await response.json();
             if (apiResponse.result && apiResponse.result.length > 0) {
-                console.log('Displaying chat history messages');
                 apiResponse.result.forEach(message => displayMessage(message));
             } else {
-                chatMessagesContainer.innerHTML += `<p class="system-message">No chat history found.</p>`;
+                chatMessagesContainer.innerHTML += `<p class="system-message">No chat history found</p>`;
             }
         } catch (error) {
-            console.error('Error fetching chat history:', error);
-            chatMessagesContainer.innerHTML += `<p class="system-message error">Network error loading history.</p>`;
+            console.error(error);
+            chatMessagesContainer.innerHTML += `<p class="system-message error">Network error</p>`;
+        }
+    };
+
+    const fetchPromptForFriend = async (friendName) => {
+        try {
+            const response = await fetchWithJwt(
+                `/api/users/${encodeURIComponent(friendName)}/style?friend=${encodeURIComponent(username)}`
+            );
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(response.status, errorText);
+                promptForFriend = "";
+                return;
+            }
+
+            const apiResponse = await response.json();
+            promptForFriend = apiResponse.result?.stylePrompt ?? "";
+        } catch (error) {
+            console.error(error);
+            promptForFriend = "";
         }
     };
 
@@ -432,9 +451,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = event.target;
         const sender = target.dataset.sender;
         if (target.classList.contains('accept-btn')) {
-            handleRequestAction(sender, 'accept');
+            handleRequest(sender, 'accept');
         } else if (target.classList.contains('reject-btn')) {
-            handleRequestAction(sender, 'reject');
+            handleRequest(sender, 'reject');
         }
     });
 
@@ -445,14 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    saveStyleButton.addEventListener('click', saveStylePrompt);
+    saveStyleButton.addEventListener('click', saveStylePromptForFriend);
 
-
-    fetchAndDisplayFriends();
-    fetchAndDisplayPendingRequests();
-    // fetchAndDisplayStylePrompt(); 
+    fetchFriends();
+    fetchPending();
     connectWebSocket();
-
-
-    console.log('Chat page loaded successfully for user:', username);
 });

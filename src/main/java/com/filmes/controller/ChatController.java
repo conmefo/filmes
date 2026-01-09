@@ -20,14 +20,13 @@ public class ChatController {
     @Autowired
     ChatHistoryService chatHistoryService;
 
-    public ChatController(SimpMessagingTemplate messagingTemplate){
+    public ChatController(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
 
     @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload Message message) {
-        System.out.println("Received message: " + message.getContent() + " from " + message.getFromUser() + " to " + message.getToUser());
-        String destination = "/topic/public/" + message.getToUser();
+    public void sendMessage(@Payload Message message, String prompt) {
+        message = chatHistoryService.filterMessage(message, prompt);
         String senderDest = "/topic/public/" + message.getFromUser();
         messagingTemplate.convertAndSend(senderDest, message);
         chatHistoryService.saveMessage(message);

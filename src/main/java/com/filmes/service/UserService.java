@@ -3,11 +3,9 @@ package com.filmes.service;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,9 +23,6 @@ import com.filmes.repository.FriendListRepository;
 import com.filmes.repository.FriendRepository;
 import com.filmes.repository.UserRepository;
 
-import io.micrometer.core.instrument.search.Search;
-import jakarta.validation.Valid;
-
 @Service
 public class UserService {
     @Autowired
@@ -35,7 +30,7 @@ public class UserService {
 
     @Autowired
     FriendRepository friendRepository;
-    
+
     @Autowired
     UserMapper userMapper;
 
@@ -67,7 +62,7 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public UserResponse updateUser(String username, UserUpdateRequest request){
+    public UserResponse updateUser(String username, UserUpdateRequest request) {
         if (userRepository.findUserByUsername(username) == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
@@ -76,7 +71,7 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.updateUser(username, password));
     }
 
-    public void deleteUser(String username){
+    public void deleteUser(String username) {
         if (userRepository.findUserByUsername(username) == null) {
             throw new AppException(ErrorCode.USER_NOT_FOUND);
         }
@@ -94,8 +89,9 @@ public class UserService {
                 response.setUsername(user.getUsername());
                 if (FriendListRepository.existFriendship(request.getRequesterUsername(), user.getUsername())) {
                     response.setFriendStatus("FRIEND");
-                } else if (friendRepository.findFriendship(request.getRequesterUsername(), user.getUsername()) != null ||
-                           friendRepository.findFriendship(user.getUsername(), request.getRequesterUsername()) != null) {
+                } else if (friendRepository.findFriendship(request.getRequesterUsername(), user.getUsername()) != null
+                        ||
+                        friendRepository.findFriendship(user.getUsername(), request.getRequesterUsername()) != null) {
                     response.setFriendStatus("PENDING");
                 } else {
                     response.setFriendStatus("NOT_FRIEND");
@@ -106,6 +102,5 @@ public class UserService {
 
         return result;
     }
-
 
 }

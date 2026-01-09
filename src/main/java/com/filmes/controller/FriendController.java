@@ -59,4 +59,11 @@ public class FriendController {
                 .result(friendService.getPendingRequests(username))
                 .build();
     }
+
+    @PostMapping("/")
+    public String postMethodName(@RequestBody String entity) {
+        
+        return entity;
+    }
+    
 }
