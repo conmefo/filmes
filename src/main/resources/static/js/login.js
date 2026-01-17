@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loginForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        // password sometimes contains spaces
         const username = document.getElementById("loginUsername").value.trim();
         const password = document.getElementById("loginPassword").value;
 
@@ -19,12 +20,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify(requestBody),
             });
 
+            // .catch is called if response is not valid JSON
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
                 throw new Error(data.message || `Login failed (${response.status})`);
             }
 
+            // ? means only access if not null/undefined
             const token = data?.result?.token;
 
             if (!token) throw new Error("Token not found in response.");

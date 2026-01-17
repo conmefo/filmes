@@ -34,6 +34,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    // @Valid is to validate the request body based on annotations in UserCreationRequest
     @PostMapping("/register")
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()

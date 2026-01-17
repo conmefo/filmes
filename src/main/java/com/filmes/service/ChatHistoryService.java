@@ -51,6 +51,7 @@ public class ChatHistoryService {
                                 "messages", List.of(
                                                 Map.of("role", "user", "content", userContent)),
                                 "reasoning", Map.of("enabled", false));
+                
 
                 String response = client.post()
                                 .uri("/api/v1/chat/completions")
