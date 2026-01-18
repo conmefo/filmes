@@ -34,7 +34,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // @Valid is to validate the request body based on annotations in UserCreationRequest
+    // @Valid is to validate the request body based on annotations in
+    // UserCreationRequest
     @PostMapping("/register")
     ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request) {
         return ApiResponse.<UserResponse>builder()
@@ -62,13 +63,6 @@ public class UserController {
                 .result(userService.searchUserName(request))
                 .build();
     }
-
-    // @GetMapping("/myInfo")
-    // ApiResponse<UserResponse> getMyInfo(@PathVariable String userId) {
-    // return ApiResponse.<UserResponse>builder()
-    // .result(userService.getMyInfo(userId))
-    // .build();
-    // }
 
     @PutMapping("/{username}")
     ApiResponse<UserResponse> updateUser(

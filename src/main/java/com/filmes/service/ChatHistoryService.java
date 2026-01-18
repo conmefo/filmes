@@ -33,6 +33,7 @@ public class ChatHistoryService {
                 if (prompt == null || prompt.trim().isEmpty())
                         return message;
 
+                // build WebClient to call OpenRouter API
                 WebClient client = WebClient.builder()
                                 .baseUrl("https://openrouter.ai")
                                 .defaultHeader("Authorization", "Bearer " + apiKey)
@@ -51,8 +52,10 @@ public class ChatHistoryService {
                                 "messages", List.of(
                                                 Map.of("role", "user", "content", userContent)),
                                 "reasoning", Map.of("enabled", false));
-                
 
+                // call OpenRouter API
+                // retrieve response body as String
+                // block current thread until response is received
                 String response = client.post()
                                 .uri("/api/v1/chat/completions")
                                 .bodyValue(body)
@@ -60,6 +63,7 @@ public class ChatHistoryService {
                                 .bodyToMono(String.class)
                                 .block();
 
+                // parse response to extract content
                 String filteredContent = response
                                 .split("\"content\":\"")[1]
                                 .split("\"")[0]

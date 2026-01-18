@@ -44,6 +44,7 @@ public class AuthenticationService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         var user = userRepository.findUserByUsername(request.getUsername());
 
+        // match password with hashed password
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         boolean isAuthenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
@@ -67,6 +68,7 @@ public class AuthenticationService {
         Date expiryDate = signedJWT.getJWTClaimsSet().getExpirationTime();
         var verified = signedJWT.verify(verifier);
 
+        // check if token is valid and not expired
         return IntrospectResponse.builder()
                 .valid(verified && expiryDate.after(new Date()))
                 .build();
@@ -86,6 +88,7 @@ public class AuthenticationService {
                 .claim("scope", buildScope(user))
                 .build();
 
+        // create JWS object with header and payload
         JWSObject jwsObject = new JWSObject(jwsHeader, claimsBuilder.toPayload());
 
         try {
@@ -98,6 +101,7 @@ public class AuthenticationService {
     }
 
     private String buildScope(User user) {
+        // build space separated roles
         StringJoiner stringJoiner = new StringJoiner(" ");
         if (!user.getRoles().isEmpty()) {
             user.getRoles().forEach(stringJoiner::add);

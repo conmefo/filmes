@@ -4,4 +4,9 @@ spring:
 jwt:
   signerKey: 5a47396f36906c32572a4f7b88b61fef554a04f9439cfae17f97b04c6b7d86a3
 openrouter:
-  api-key: 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
+  api-key: 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
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG

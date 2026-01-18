@@ -20,58 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class ChatHistoryController {
   @Autowired
   ChatHistoryService chatHistoryService;
-  @Value("${openrouter.api-key}")
-  private String apiKey;
-
-  public Message filterMessage(Message message, String prompt) {
-
-    WebClient client = WebClient.builder()
-        .baseUrl("https://openrouter.ai")
-        .defaultHeader("Authorization", "Bearer " + apiKey)
-        .defaultHeader("Content-Type", "application/json")
-        .build();
-
-    String requestBody = String.format(
-        """
-            {
-              "model": "xiaomi/mimo-v2-flash:free",
-              "messages": [
-                {
-                  "role": "user",
-                  "content": " Rewrite the message below to satisfy the request.
-                    Keep the original language of the message.
-                    Do not add emojis.
-                    Output only the final rewritten message. Message: %s. Request: %s"
-                }
-              ],
-              "reasoning": {
-                "enabled": false
-              }
-            }
-            """,
-        message.getContent(),
-        prompt);
-
-    String response = client.post()
-        .uri("/api/v1/chat/completions")
-        .bodyValue(requestBody)
-        .retrieve()
-        .bodyToMono(String.class)
-        .block();
-
-    String filteredContent = response
-        .split("\"content\":\"")[1]
-        .split("\"")[0]
-        .replace("\\n", "\n");
-
-    Message filteredMessage = new Message();
-    filteredMessage.setFromUser(message.getFromUser());
-    filteredMessage.setToUser(message.getToUser());
-    filteredMessage.setTimestamp(message.getTimestamp());
-    filteredMessage.setContent(filteredContent);
-
-    return filteredMessage;
-  }
 
   @GetMapping("")
   public ApiResponse<List<Message>> getChatHistory(

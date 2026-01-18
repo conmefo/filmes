@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/login.html", "/style.css", "/app.js", "/favicon.ico").permitAll()
                         .requestMatchers("/ws-chat/**").permitAll()
-                        // .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+
                         .anyRequest().authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 -> oauth2

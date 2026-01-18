@@ -22,7 +22,8 @@ public class ChatHistoryRepository {
 
     public synchronized void saveMessage(Message message) {
         File chatFile = dataRepository.createTable(getChatFileName(message.getFromUser(), message.getToUser()));
-        if (chatFile == null) return;
+        if (chatFile == null)
+            return;
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(chatFile, true))) {
             writer.write(message.toString());
@@ -35,7 +36,8 @@ public class ChatHistoryRepository {
     public List<Message> getChatHistory(String userA, String userB) {
         List<Message> messages = new ArrayList<>();
         File chatFile = dataRepository.createTable(getChatFileName(userA, userB));
-        if (chatFile == null) return messages;
+        if (chatFile == null)
+            return messages;
 
         try (BufferedReader reader = new BufferedReader(new FileReader(chatFile))) {
             String line;

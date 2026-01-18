@@ -83,6 +83,7 @@ public class UserService {
         List<User> users = userRepository.getAllUsers();
         List<SearchUserResponse> result = new ArrayList<>();
 
+        // search username that matches query
         for (User user : users) {
             if (user.getUsername().toLowerCase().contains(request.getQuery().toLowerCase())) {
                 SearchUserResponse response = new SearchUserResponse();
